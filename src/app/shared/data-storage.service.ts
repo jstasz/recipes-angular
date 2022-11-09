@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { map } from "rxjs/operators";
+import { map, tap } from "rxjs/operators";
 import { Recipe } from "../recipes/recipes.model";
 import { RecipesService } from "../recipes/recipes.service";
 
@@ -19,13 +19,13 @@ export class DataStorageService {
   }
 
   fetchRecipes() {
-    this.http.get<Recipe[]>('https://angular-recipes-c5520-default-rtdb.firebaseio.com/recipes.json').
+    return this.http.get<Recipe[]>('https://angular-recipes-c5520-default-rtdb.firebaseio.com/recipes.json').
       pipe(map(recipes => {
         return recipes.map(recipe => {
           return { ...recipe, ingredients: recipe.ingredients ? recipe.ingredients : [] }
         })
-      })).subscribe(recipes => {
+      }), tap(recipes => {
         this.recipeService.setRecipes(recipes)
-      })
+      }))
   }
 }
