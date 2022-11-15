@@ -1,10 +1,11 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-
-import { catchError, Subject, tap, throwError } from "rxjs";
+import { catchError } from "rxjs/operators";
+import { BehaviorSubject, Subject, tap, throwError } from "rxjs";
 import { User } from "./user.model";
+import { Router } from "@angular/router";
 
-export interface authResponseData {
+export interface AuthResponseData {
   kind: string,
   idToken: string,
   email: string,
@@ -19,24 +20,31 @@ export interface authResponseData {
 })
 export class AuthService {
 
-  user = new Subject<User>
+  user = new BehaviorSubject<User>(null)
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private router: Router) { }
 
   signUp(email: string, password: string) {
-    return this.http.post<authResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBiNKlxN786h_nYTHIcNxnNidY2GSrydBw', {
+    return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBiNKlxN786h_nYTHIcNxnNidY2GSrydBw', {
       email: email,
       password: password,
       returnSecureToken: true
-    }).pipe(catchError(this.handleError), tap(resData => this.handlingAuthentication(resData.email, resData.localId, resData.idToken, +resData.expiresIn)))
+    }).pipe(
+      catchError(this.handleError), tap(resData => this.handlingAuthentication(resData.email, resData.localId, resData.idToken, +resData.expiresIn)))
   }
 
   loginIn(email: string, password: string) {
-    return this.http.post<authResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBiNKlxN786h_nYTHIcNxnNidY2GSrydBw', {
+    return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBiNKlxN786h_nYTHIcNxnNidY2GSrydBw', {
       email: email,
       password: password,
       returnSecureToken: true
-    }).pipe(catchError(this.handleError), tap(resData => this.handlingAuthentication(resData.email, resData.localId, resData.idToken, +resData.expiresIn)))
+    }).pipe(
+      catchError(this.handleError), tap(resData => this.handlingAuthentication(resData.email, resData.localId, resData.idToken, +resData.expiresIn)));
+  }
+
+  logOut() {
+    this.user.next(null)
+    this.router.navigate(['/auth'])
   }
 
   private handlingAuthentication(email: string, userId: string, token: string, expiresIn: number) {
@@ -46,12 +54,10 @@ export class AuthService {
   }
 
   private handleError(resError: HttpErrorResponse) {
-    let errorMessage = 'an unknown error'
-
+    let errorMessage = 'an unknown error';
     if (!resError.error || !resError.error.error) {
       return throwError(errorMessage)
     }
-
     switch (resError.error.error.message) {
       case 'EMAIL_EXISTS':
         errorMessage = 'The email address is already in use by another account';
@@ -61,9 +67,7 @@ export class AuthService {
         break;
       case 'INVALID_PASSWORD':
         errorMessage = 'The password is invalid or the user does not have a password';
-        break;
     }
-
-    return throwError(errorMessage)
+    return throwError(errorMessage);
   }
 }
