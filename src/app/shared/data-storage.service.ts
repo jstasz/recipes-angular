@@ -20,7 +20,6 @@ export class DataStorageService {
   }
 
   fetchRecipes() {
-
     return this.http.get<Recipe[]>('https://angular-recipes-c5520-default-rtdb.firebaseio.com/recipes.json?',)
       .pipe(
         map(recipes => {
