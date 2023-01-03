@@ -12,6 +12,7 @@ import { ShoppingListService } from './shoppingList.service';
 export class ShoppingListComponent implements OnInit, OnDestroy {
   ingredients: Ingredient[];
   private ingChangeSub: Subscription;
+  
   constructor(private shoppingListService: ShoppingListService) { }
 
   ngOnInit() {
