@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable, Subscription } from 'rxjs';
 import { Ingredient } from '../shared/ingredients.model';
-import { State } from './store/shopping-list.reducer';
 import * as ShoppingListAction from './store/shopping-list-action'
+import * as fromApp from '../store/app.reducer'
 
 @Component({
   selector: 'app-shopping-list',
@@ -16,7 +16,7 @@ export class ShoppingListComponent implements OnInit {
   private ingChangeSub: Subscription;
 
   constructor(
-    private store: Store<{shoppingList: State}>
+    private store: Store<fromApp.AppState>
     ) { }
 
   ngOnInit() {
