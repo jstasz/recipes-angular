@@ -1,6 +1,4 @@
-import { Action } from "@ngrx/store";
 import { Ingredient } from "../../shared/ingredients.model";
-
 import * as ShoppinglistActions from "./shopping-list-action";
 
 export interface State {
@@ -37,24 +35,40 @@ switch(action.type) {
       ]
     }
   case ShoppinglistActions.UPDATE_INGREDIENTS:
-      const ingredient = state.ingredients[action.payload.index]
+      const ingredient = state.ingredients[state.editedIngredientIndex]
       const updatedIngredient = {
         ...ingredient,
-        ...action.payload.ingredient
+        ...action.payload
       }
       const updatedIngredients = [...state.ingredients]
-      updatedIngredients[action.payload.index] = updatedIngredient
+      updatedIngredients[state.editedIngredientIndex] = updatedIngredient
     return {
         ...state,
-        ingredients: updatedIngredients
+        ingredients: updatedIngredients,
+        editedIngredientIndex: -1,
+        editedIngredient: null
       }
   case ShoppinglistActions.DELETE_INGREDIENTS:
     return {
         ...state,
         ingredients: state.ingredients.filter((ig, igIndex) => {
-          return igIndex !== action.payload
-        })
+          return igIndex !== state.editedIngredientIndex
+        }),
+        editedIngredientIndex: -1,
+        editedIngredient: null
       }
+  case ShoppinglistActions.START_EDIT:
+    return {
+      ...state,
+      editedIngredientIndex: action.payload,
+      editedIngredient: {...state.ingredients[action.payload]}
+    }
+  case ShoppinglistActions.STOP_EDIT:
+    return {
+      ...state,
+      editedIngredientIndex: -1,
+      editedIngredient: null
+    }
   default:
     return state
   }
