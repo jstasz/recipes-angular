@@ -77,7 +77,6 @@ export class AuthService {
   }
 
   logOut() {
-    // this.user.next(null)
     this.store.dispatch(new authAction.Logout)
     this.router.navigate(['/auth'])
     localStorage.removeItem('userData')
@@ -123,6 +122,7 @@ export class AuthService {
         break;
       case 'INVALID_PASSWORD':
         errorMessage = 'The password is invalid or the user does not have a password';
+        break;
     }
     return throwError(errorMessage);
   }
