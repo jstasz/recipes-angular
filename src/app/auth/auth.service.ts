@@ -31,24 +31,6 @@ export class AuthService {
     private store: Store<fromApp.AppState>
     ) { }
 
-  signUp(email: string, password: string) {
-    return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + environment.firebaseAPIKey, {
-      email: email,
-      password: password,
-      returnSecureToken: true
-    }).pipe(
-      catchError(this.handleError), tap(resData => this.handlingAuthentication(resData.email, resData.localId, resData.idToken, +resData.expiresIn)))
-  }
-
-  loginIn(email: string, password: string) {
-    return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + environment.firebaseAPIKey, {
-      email: email,
-      password: password,
-      returnSecureToken: true
-    }).pipe(
-      catchError(this.handleError), tap(resData => this.handlingAuthentication(resData.email, resData.localId, resData.idToken, +resData.expiresIn)));
-  }
-
   autoLoginIn() {
     const userData: {
       email: string;
@@ -63,8 +45,7 @@ export class AuthService {
     const loadedUser = new User(userData.email, userData.id, userData._token, new Date(userData._tokenExpirationDate))
 
     if (loadedUser.token) {
-      // this.user.next(loadedUser)
-      this.store.dispatch(new authAction.Login({
+      this.store.dispatch(new authAction.AuthetnticateSuccess({
         email: loadedUser.email,
         userId: loadedUser.id,
         token: loadedUser.token,
@@ -77,8 +58,7 @@ export class AuthService {
   }
 
   logOut() {
-    this.store.dispatch(new authAction.Logout)
-    this.router.navigate(['/auth'])
+    this.store.dispatch(new authAction.Logout())
     localStorage.removeItem('userData')
 
     if (this.tokenExpirationTimer) {
@@ -96,8 +76,7 @@ export class AuthService {
   private handlingAuthentication(email: string, userId: string, token: string, expiresIn: number) {
     const expirationDate = new Date(new Date().getTime() + expiresIn * 1000)
     const user = new User(email, userId, token, expirationDate)
-    // this.user.next(user)
-    this.store.dispatch(new authAction.Login({
+    this.store.dispatch(new authAction.AuthetnticateSuccess({
       email: email,
       userId: userId,
       token: token,
